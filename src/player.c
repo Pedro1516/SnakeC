@@ -7,7 +7,7 @@ Player *create_player(Color color, Rectangle head)
     p->color = color;
     p->head = create_head(head);
     p->head->direction = (Vector2){1, 0};
-    p->speed = 180;
+    p->speed = 3;
     add_node(p);
 
     return p;
@@ -18,6 +18,8 @@ Node *create_head(Rectangle head)
     Node *h = malloc(sizeof(Node));
     h->prox = NULL;
     h->direction = (Vector2){0, 0};
+    h->direction_curve = (Vector2){0, 0};
+    h->curve = (Vector2){0, 0};
     h->rect = head;
 
     return h;
@@ -81,7 +83,7 @@ void draw_player(Player *player)
     }
 }
 
-void move_player(Player *player, float deltatime)
+void move_player(Player *player)
 {
     Vector2 pos_anterior = {0, 0};
     Vector2 curve = {0, 0};
@@ -90,27 +92,34 @@ void move_player(Player *player, float deltatime)
     if (player == NULL)
         return;
 
+    DrawText(TextFormat("Current: %f, %f", current->prox->curve.x, current->prox->curve.y), 10, 10, 20, WHITE);
     while (true)
     {
         if (current == NULL)
             return;
 
-        if (current == player->head)
+        if (fabs(current->rect.x - current->curve.x) < 1 && fabs(current->rect.y - current->curve.y) < 1)
         {
-            pos_anterior = (Vector2){current->rect.x, current->rect.y};
-            current->rect.x += player->speed * player->head->direction.x * deltatime; // Move a cabeça
-            current->rect.y += player->speed * player->head->direction.y * deltatime;
-        }
-        else
-        {
-            Vector2 aux = {current->rect.x, current->rect.y};
-            current->rect.x = pos_anterior.x;
-            current->rect.y = pos_anterior.y;
+            current->direction = current->direction_curve;
 
-            pos_anterior.x = aux.x + ((player->head->direction.x != 0) ? current->rect.width : 0);
-            pos_anterior.y = aux.y + ((player->head->direction.y != 0) ? current->rect.height : 0);
+            if (current->prox != NULL)
+            {
+                current->prox->curve = current->curve;
+                current->prox->direction_curve = current->direction_curve;
+            }
+
+            current->curve = (Vector2){0, 0};
+            current->direction_curve = (Vector2){0, 0};
         }
 
+        current->rect.x -= player->speed * current->direction.x;
+        current->rect.y -= player->speed * current->direction.y;
         current = current->prox;
     }
+}
+
+void register_curve(Player *player)
+{
+    player->head->prox->curve = (Vector2){player->head->rect.x, player->head->rect.y};
+    player->head->prox->direction_curve = player->head->direction;
 }
