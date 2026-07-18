@@ -1,5 +1,4 @@
 #include "../includes/player.h"
-#include <math.h>
 
 Player *create_player(Color color, Rectangle head)
 {
@@ -85,14 +84,11 @@ void draw_player(Player *player)
 
 void move_player(Player *player)
 {
-    Vector2 pos_anterior = {0, 0};
-    Vector2 curve = {0, 0};
     Node *current = player->head;
 
     if (player == NULL)
         return;
 
-    DrawText(TextFormat("Current: %f, %f", current->prox->curve.x, current->prox->curve.y), 10, 10, 20, WHITE);
     while (true)
     {
         if (current == NULL)
@@ -122,4 +118,33 @@ void register_curve(Player *player)
 {
     player->head->prox->curve = (Vector2){player->head->rect.x, player->head->rect.y};
     player->head->prox->direction_curve = player->head->direction;
+}
+
+void check_gameover(Player *player, Game *game)
+{
+    if (player->head->rect.x + player->head->rect.width > game->screenWidth || player->head->rect.x < 0 || player->head->rect.y + player->head->rect.height > game->screenHeight || player->head->rect.y < 0)
+    {
+        game->state = GAME_GAMEOVER;
+    }
+    // if(player->head->prox != NULL)
+    // {
+    //     Node *aux = player->head->prox;
+    //     while (true)
+    //     {
+    //         if (CheckCollisionRecs(player->head->rect, aux->rect))
+    //         {
+    //             game->state = GAME_GAMEOVER;
+    //             break;
+    //         }
+    //         if (aux->prox == NULL)
+    //             break;
+    //         aux = aux->prox;
+    //     }
+    // }
+}
+
+
+void scoreup(Player *player, Game *game){
+    add_node(player);
+    game->score++;
 }

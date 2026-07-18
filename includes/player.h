@@ -1,6 +1,9 @@
 
 #include <raylib.h>
 #include <stdlib.h>
+#include <math.h>
+#include "game_state.h"
+
 #ifndef PLAYER_H
 #define PLAYER_H
 
@@ -10,6 +13,7 @@ typedef struct node
     Vector2 direction;
     Vector2 curve;
     Vector2 direction_curve;
+    int curve_index;
     struct node *prox;
 } Node;
 
@@ -27,4 +31,7 @@ Vector2 calc_pos_node(Player *player);
 void add_node(Player *player);
 void move_player(Player *player);
 void register_curve(Player *player);
+void check_gameover(Player *player, Game *game);
+void scoreup(Player *player, Game *game);
+
 #endif
