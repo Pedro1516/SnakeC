@@ -31,6 +31,11 @@ int main(void)
     float timer = 1;
     int index_menu = 0;
 
+    Text text_highscore;
+    text_highscore.character_inserted = 0;
+    text_highscore.limit = 20;
+    text_highscore.text = calloc(text_highscore.limit + 1, sizeof(char));
+
     while (!WindowShouldClose())
     {
         if (check_gameover(player, &status) && check_highscore(status))
@@ -136,6 +141,26 @@ int main(void)
                 else
                     DrawText(TextFormat("%d.", i), 20, 60 + i * 45, 30, RED);
             }
+
+            continue;
+        }
+
+        if (status.state == GAME_NEW_HIGHSCORE)
+        {
+            timer += GetFrameTime();
+
+            read_keyboard(&text_highscore);
+            draw_new_high_menu(&status, &timer, text_highscore.text);
+            // new_highscore(&status, text_highscore.text);
+
+            continue;
+        }
+
+        if (status.state == GAME_SETTINGS)
+        {
+            BeginDrawing();
+            ClearBackground(BLACK);
+            EndDrawing();
 
             continue;
         }
