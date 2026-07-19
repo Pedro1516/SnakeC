@@ -2,10 +2,11 @@
 #include <raylib.h>
 #include <stdlib.h>
 #include <math.h>
-#include "game_state.h"
 
 #ifndef PLAYER_H
 #define PLAYER_H
+
+typedef struct Game Game;
 
 typedef struct node
 {
@@ -17,7 +18,7 @@ typedef struct node
     struct node *prox;
 } Node;
 
-typedef struct
+typedef struct Player
 {
     Node *head;
     Color color;
@@ -31,7 +32,8 @@ Vector2 calc_pos_node(Player *player);
 void add_node(Player *player);
 void move_player(Player *player);
 void register_curve(Player *player);
-void check_gameover(Player *player, Game *game);
+int check_gameover(Player *player, Game *game);
 void scoreup(Player *player, Game *game);
+void kill_player(Player *player);
 
 #endif

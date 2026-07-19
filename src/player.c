@@ -1,4 +1,5 @@
 #include "../includes/player.h"
+#include "../includes/game_state.h"
 
 Player *create_player(Color color, Rectangle head)
 {
@@ -120,11 +121,12 @@ void register_curve(Player *player)
     player->head->prox->direction_curve = player->head->direction;
 }
 
-void check_gameover(Player *player, Game *game)
+int check_gameover(Player *player, Game *game)
 {
     if (player->head->rect.x + player->head->rect.width > game->screenWidth || player->head->rect.x < 0 || player->head->rect.y + player->head->rect.height > game->screenHeight || player->head->rect.y < 0)
     {
         game->state = GAME_GAMEOVER;
+        return 1;
     }
     // if(player->head->prox != NULL)
     // {
@@ -141,10 +143,29 @@ void check_gameover(Player *player, Game *game)
     //         aux = aux->prox;
     //     }
     // }
+
+    return 0;
 }
 
 
 void scoreup(Player *player, Game *game){
     add_node(player);
     game->score++;
+}
+
+void kill_player(Player *player)
+{
+    if (player == NULL)
+        return;
+
+    Node *current = player->head;
+
+    while (current != NULL)
+    {
+        Node *next = current->prox;
+        free(current);
+        current = next;
+    }
+
+    free(player);
 }
