@@ -33,11 +33,6 @@ typedef struct Game
     GameState state;
 } Game;
 
-typedef struct Text{
-    char *text;
-    int limit;
-    int character_inserted;
-}Text;
 
 
 void new_highscore(Game *game, const char *name);
@@ -46,6 +41,6 @@ char *string_duplicate(const char *str);
 void draw_menu(Game game, int index_menu);
 int check_highscore(Game game);
 void draw_new_high_menu(Game *game, float *timer, const char *text);
-void read_keyboard(Text *text);
+
 
 #endif

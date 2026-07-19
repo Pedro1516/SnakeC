@@ -1,20 +1,17 @@
 
-#include <raylib.h>
-#include <stdlib.h>
-#include <math.h>
-
 #ifndef PLAYER_H
 #define PLAYER_H
+#include <raylib.h>
 
 typedef struct Game Game;
+typedef struct Queue Queue;
 
 typedef struct node
 {
     Rectangle rect;
     Vector2 direction;
-    Vector2 curve;
-    Vector2 direction_curve;
-    int curve_index;
+    Queue *curve;
+    Queue *direction_curve;
     struct node *prox;
 } Node;
 
@@ -35,5 +32,6 @@ void register_curve(Player *player);
 int check_gameover(Player *player, Game *game);
 void scoreup(Player *player, Game *game);
 void kill_player(Player *player);
+Vector2 *create_vector2(float x, float y);
 
 #endif

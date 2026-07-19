@@ -1,9 +1,10 @@
 #include <raylib.h>
+#include <stdlib.h>
 #include "../includes/player.h"
 #include "../includes/input.h"
 #include "../includes/apple.h"
 #include "../includes/game_state.h"
-#include <stdio.h>
+#include "../includes/queue.h"
 
 int main(void)
 {
@@ -16,7 +17,6 @@ int main(void)
     for (int i = 0; i < HIGHSCORE_MAX; i++)
         status.high_score[i].score = -1;
 
-    status.high_score[0] = (HighScore){"Pedro", 10000};
 
     Player *player = create_player(WHITE, (Rectangle){status.screenWidth / 2 - 15, status.screenWidth / 2 - 15, 30, 30});
     Apple *apple = malloc(sizeof(Apple) * 5);
@@ -80,7 +80,7 @@ int main(void)
         if (status.state == GAME_PLAYING)
         {
             move_player(player);
-            ler_teclado(player);
+            read_movement_player(player);
 
             collect_apple(player, &status, apple, 1);
         }
@@ -149,9 +149,16 @@ int main(void)
         {
             timer += GetFrameTime();
 
+            if (IsKeyPressed(KEY_ENTER) && text_highscore.character_inserted > 0)
+            {
+                new_highscore(&status, text_highscore.text);
+                status.state = GAME_MENU;
+                reset_game(&player, &status);
+                reset_text(&text_highscore);
+            }
+
             read_keyboard(&text_highscore);
             draw_new_high_menu(&status, &timer, text_highscore.text);
-            // new_highscore(&status, text_highscore.text);
 
             continue;
         }

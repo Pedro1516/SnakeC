@@ -1,5 +1,6 @@
 #include "../includes/game_state.h"
 #include "../includes/player.h"
+#include <stdlib.h>
 
 void new_highscore(Game *game, const char *name)
 {
@@ -64,9 +65,9 @@ void draw_menu(Game game, int index_menu)
 
 int check_highscore(Game game)
 {
-    if(game.score <= 0)
+    if (game.score <= 0)
         return 0;
-        
+
     for (int i = 0; i < HIGHSCORE_MAX; i++)
     {
         if (game.score > game.high_score[i].score)
@@ -85,11 +86,11 @@ void draw_new_high_menu(Game *game, float *timer, const char *text)
     DrawText("WOW! You can a new highscore!", game->screenWidth / 2 - MeasureText("WOW! You can a new highscore!", 40) / 2, game->screenHeight / 2 - 20, 40, RED);
     DrawText(TextFormat("SCORE %d", game->score), game->screenWidth / 2 - MeasureText(TextFormat("SCORE %d", game->score), 30) / 2, game->screenHeight / 2 + 25, 30, RED);
     DrawText("Entry your name: ", game->screenWidth / 2 - 250, game->screenHeight / 2 + 100, 30, RED);
-    if(text == NULL)
+    if (text == NULL)
         DrawText("", game->screenWidth / 2 - 245 + MeasureText("Entry your name: ", 30), game->screenHeight / 2 + 105, 20, WHITE);
     else
         DrawText(text, game->screenWidth / 2 - 245 + MeasureText("Entry your name: ", 30), game->screenHeight / 2 + 105, 20, WHITE);
-    
+
     DrawRectangleLinesEx((Rectangle){game->screenWidth / 2 - 250 + MeasureText("Entry your name: ", 30), game->screenHeight / 2 + 100, 300, 30}, 2, WHITE);
 
     if ((*timer) >= 1.0f && (*timer) < 4.0f)
@@ -105,25 +106,3 @@ void draw_new_high_menu(Game *game, float *timer, const char *text)
     EndDrawing();
 }
 
-void read_keyboard(Text *text)
-{
-    int key = GetKeyPressed();
-
-    if (key > 0)
-    {
-        if (text->character_inserted < text->limit)
-        {
-            if ((key >= 32 && key <= 93))
-            {
-                text->text[text->character_inserted] = key;
-                text->character_inserted++;
-            }
-        }
-
-        if (text->character_inserted > 0 && key == KEY_BACKSPACE)
-        {
-            text->character_inserted--;
-            text->text[text->character_inserted] = 0;
-        }
-    }
-}
