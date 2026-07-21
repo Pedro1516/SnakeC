@@ -173,21 +173,21 @@ int check_gameover(Player *player, Game *game)
         game->state = GAME_GAMEOVER;
         return 1;
     }
-    // if(player->head->prox != NULL)
-    // {
-    //     Node *aux = player->head->prox;
-    //     while (true)
-    //     {
-    //         if (CheckCollisionRecs(player->head->rect, aux->rect))
-    //         {
-    //             game->state = GAME_GAMEOVER;
-    //             break;
-    //         }
-    //         if (aux->prox == NULL)
-    //             break;
-    //         aux = aux->prox;
-    //     }
-    // }
+    if (player->head->prox != NULL)
+    {
+        Node *aux = player->head->prox;
+        while (true)
+        {
+            if (CheckCollisionRecs(player->head->rect, aux->rect) && player->head->prox != aux)
+            {
+                game->state = GAME_GAMEOVER;
+                return 1;
+            }
+            if (aux->prox == NULL)
+                break;
+            aux = aux->prox;
+        }
+    }
 
     return 0;
 }

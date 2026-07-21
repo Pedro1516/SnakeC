@@ -17,6 +17,9 @@ int main(void)
     for (int i = 0; i < HIGHSCORE_MAX; i++)
         status.high_score[i].score = -1;
 
+    HighScore *highscore = read_file();
+    load_highscore(highscore, status.high_score);
+    free(highscore);
 
     Player *player = create_player(WHITE, (Rectangle){status.screenWidth / 2 - 15, status.screenWidth / 2 - 15, 30, 30});
     Apple *apple = malloc(sizeof(Apple) * 5);
@@ -180,7 +183,8 @@ int main(void)
         DrawText(TextFormat("Score: %d", status.score), 10, 10, 20, RAYWHITE);
         EndDrawing();
     }
-
+    
+    save_highscore(status.high_score);
     UnloadTexture(menu_logo);
     CloseWindow();
 
