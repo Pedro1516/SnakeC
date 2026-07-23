@@ -1,6 +1,8 @@
 #include "../includes/game_state.h"
 #include "../includes/player.h"
 #include <stdlib.h>
+#include <string.h>
+
 
 void new_highscore(Game *game, const char *name)
 {
@@ -41,25 +43,30 @@ char *string_duplicate(const char *str)
 
 void draw_menu(Game game, int index_menu)
 {
-    const char *text[3];
-    int measure_text[3];
-    int font_size = 40;
+
+    const char *text[4];
+    Vector2 measure_text[4];
+    int font_size = 60;
 
     text[0] = "Play";
-    measure_text[0] = MeasureText(text[0], font_size);
+    measure_text[0] = MeasureTextEx(game.font, text[0], font_size, 0);
 
     text[1] = "Highscore";
-    measure_text[1] = MeasureText(text[1], font_size);
+    measure_text[1] = MeasureTextEx(game.font, text[1], font_size, 0);
 
     text[2] = "Settings";
-    measure_text[2] = MeasureText(text[2], font_size);
+    measure_text[2] = MeasureTextEx(game.font, text[2], font_size, 0);
 
-    for (int i = 0; i < 3; i++)
+    text[3] = "Quit";
+    measure_text[3] = MeasureTextEx(game.font, text[3], font_size, 0);
+
+    for (int i = 0; i < 4; i++)
     {
         if (i == index_menu)
-            DrawRectangle(game.screenWidth / 2 - measure_text[i] / 2 - 5, game.screenHeight / 2 - (font_size + 10) / 2 + 100 + 60 * i, measure_text[i] + 10, font_size + 10, (Color){255, 255, 255, 127});
-
-        DrawText(text[i], game.screenWidth / 2 - measure_text[i] / 2, game.screenHeight / 2 - (font_size + 10) / 2 + 100 + 60 * i, font_size, RED);
+            DrawRectangle(game.screenWidth / 2 - measure_text[i].x / 2 - 5, game.screenHeight / 2 - ( measure_text[i].y + 10) / 2 + 100 + 60 * i,  measure_text[i].x + 10,  measure_text[i].y + 10, (Color){255, 255, 255, 127});
+            // DrawText(text[i], game.screenWidth / 2 - measure_text[i] / 2, game.screenHeight / 2 - (font_size + 10) / 2 + 100 + 60 * i, font_size, RED);
+        Vector2 pos = {game.screenWidth / 2 - measure_text[i].x / 2, game.screenHeight / 2 - ( measure_text[i].y + 10) / 2 + 100 + 60 * i};
+        DrawTextEx(game.font, text[i], pos, font_size, 0, RED);
     }
 }
 

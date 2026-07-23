@@ -22,6 +22,7 @@ Player *create_player(Color color, Rectangle head)
 
     p->head->direction = (Vector2){1, 0};
     p->speed = 3;
+    p->tail = NULL;
     add_node(p);
 
     return p;
@@ -58,19 +59,22 @@ Node *create_head(Rectangle head)
 
 Vector2 calc_pos_node(Player *player)
 {
-    Node *aux = player->head;
     Vector2 pos;
 
-    while (true)
-    {
-        if (aux->prox == NULL)
-        {
-            pos.x = aux->rect.x + aux->rect.width * aux->direction.x;
-            pos.y = aux->rect.y + aux->rect.height * aux->direction.y;
-            return pos;
-        }
+    if (player == NULL)
+        return (Vector2){-1, -1};
 
-        aux = aux->prox;
+    if (player->tail != NULL)
+    {
+        pos.x = player->tail->rect.x + player->tail->rect.width * player->tail->direction.x;
+        pos.y = player->tail->rect.y + player->tail->rect.height * player->tail->direction.y;
+        return pos;
+    }
+    else
+    {
+        pos.x = player->head->rect.x + player->head->rect.width * player->head->direction.x;
+        pos.y = player->head->rect.y + player->head->rect.height * player->head->direction.y;
+        return pos;
     }
 }
 
@@ -79,25 +83,23 @@ void add_node(Player *player)
     if (player == NULL)
         return;
 
-    Node *h = player->head;
     Vector2 pos = calc_pos_node(player);
-    while (true)
-    {
-        if (h->prox == NULL)
-        {
-            Node *aux = create_head((Rectangle){pos.x, pos.y, h->rect.width, h->rect.height});
-            if (aux == NULL)
-                return;
+    Node *node = create_head((Rectangle){pos.x, pos.y, 30, 30});
+    if (node == NULL)
+        return;
 
-            h->prox = aux;
-            h->prox->direction = h->direction;
-            break;
-        }
-        else
-        {
-            h = h->prox;
-        }
+    if (player->tail == NULL)
+    {
+        player->head->prox = node;
+        node->direction = player->head->direction;
+        player->tail = node;
+
+        return;
     }
+
+    player->tail->prox = node;
+    player->tail->prox->direction = player->tail->direction;
+    player->tail = player->tail->prox;
 }
 
 void draw_player(Player *player)
@@ -118,6 +120,26 @@ void draw_player(Player *player)
     }
 }
 
+void apply_curve_transition(Node *current)
+{
+    if (Vector2Distance(*(Vector2 *)peek_queue(current->curve), (Vector2){current->rect.x, current->rect.y}) <= 1)
+    {
+        current->direction = *(Vector2 *)peek_queue(current->direction_curve);
+
+        Vector2 *curve = dequeue(current->curve);
+        Vector2 *curve_direction = dequeue(current->direction_curve);
+
+        if (current->prox != NULL)
+        {
+            enqueue(current->prox->curve, create_vector2(curve->x, curve->y));
+            enqueue(current->prox->direction_curve, create_vector2(curve_direction->x, curve_direction->y));
+        }
+
+        free(curve);
+        free(curve_direction);
+    }
+}
+
 void move_player(Player *player)
 {
     if (player == NULL)
@@ -134,23 +156,8 @@ void move_player(Player *player)
         current->rect.y -= player->speed * current->direction.y;
 
         if (current->curve->head != NULL && current->direction_curve->head != NULL)
-        { // fabs(current->rect.x - (*(Vector2 *)peek_queue(current->curve)).x) < 1 && fabs(current->rect.y - (*(Vector2 *)peek_queue(current->curve)).y) < 1
-            if (Vector2Distance(*(Vector2 *)peek_queue(current->curve), (Vector2){current->rect.x, current->rect.y}) <= 1)
-            {
-                current->direction = *(Vector2 *)peek_queue(current->direction_curve);
-
-                Vector2 *curve = dequeue(current->curve);
-                Vector2 *curve_direction = dequeue(current->direction_curve);
-
-                if (current->prox != NULL)
-                {
-                    enqueue(current->prox->curve, create_vector2(curve->x, curve->y));
-                    enqueue(current->prox->direction_curve, create_vector2(curve_direction->x, curve_direction->y));
-                }
-
-                free(curve);
-                free(curve_direction);
-            }
+        {
+            apply_curve_transition(current);
         }
 
         current = current->prox;
@@ -208,6 +215,8 @@ void kill_player(Player *player)
     while (current != NULL)
     {
         Node *next = current->prox;
+        destroy_queue(current->curve);
+        destroy_queue(current->direction_curve);
         free(current);
         current = next;
     }

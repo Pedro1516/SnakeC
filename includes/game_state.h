@@ -1,11 +1,11 @@
-#include <string.h>
-#include <string.h>
+#include <raylib.h>
 #include "highscore.h"
 
 #ifndef GAME_STATE_H
 #define GAME_STATE_H
 
 typedef struct Player Player;
+
 
 typedef enum
 {
@@ -15,7 +15,8 @@ typedef enum
     GAME_GAMEOVER,
     GAME_HIGHSCORE,
     GAME_NEW_HIGHSCORE,
-    GAME_SETTINGS
+    GAME_SETTINGS,
+    GAME_CLOSE
 } GameState;
 
 typedef struct Game
@@ -23,6 +24,7 @@ typedef struct Game
     int screenWidth;
     int screenHeight;
     int score;
+    Font font;
     HighScore high_score[HIGHSCORE_MAX];
     GameState state;
 } Game;

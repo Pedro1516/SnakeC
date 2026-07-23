@@ -18,6 +18,7 @@ typedef struct node
 typedef struct Player
 {
     Node *head;
+    Node *tail;
     Color color;
     float speed;
 } Player;

@@ -10,7 +10,8 @@ INC_DIR = include
 BUILD_DIR = build
 
 # Flags de compilação
-CFLAGS = -Wall -Wextra -std=c99 -I$(INC_DIR)
+CFLAGS = -Wall -Wextra -std=c99 -I$(INC_DIR) -g
+
 
 # Bibliotecas da raylib
 LIBS = -lraylib -lGL -lm -lpthread -ldl -lrt -lX11

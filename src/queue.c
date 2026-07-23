@@ -6,7 +6,7 @@ Queue *create_queue()
     Queue *queue = malloc(sizeof(Queue));
     if (queue == NULL)
         return NULL;
-        
+
     queue->head = NULL;
     queue->tail = NULL;
 
@@ -61,4 +61,24 @@ void *dequeue(Queue *queue)
         queue->tail = NULL;
 
     return data;
+}
+
+void destroy_queue(Queue *queue)
+{
+    if (queue == NULL)
+        return;
+
+    QueueNode *aux = queue->head;
+
+    while (aux != NULL)
+    {
+        QueueNode *next = aux->next;
+
+        free(aux->data);
+        free(aux);
+
+        aux = next;
+    }
+
+    free(queue);
 }

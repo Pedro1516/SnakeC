@@ -12,7 +12,9 @@ int main(void)
         .screenWidth = 800,
         .screenHeight = 600,
         .score = 0,
-        .state = GAME_MENU};
+        .state = GAME_MENU,
+
+    };
 
     for (int i = 0; i < HIGHSCORE_MAX; i++)
         status.high_score[i].score = -1;
@@ -29,6 +31,13 @@ int main(void)
     SetTargetFPS(60);
     SetExitKey(KEY_NULL);
 
+    status.font = LoadFontEx(
+        "assets/fonts/EduVICWANTHand-VariableFont_wght.ttf",
+        60,
+        NULL,
+        0);
+    SetTextureFilter(status.font.texture, TEXTURE_FILTER_BILINEAR);
+
     Texture menu_logo = LoadTexture("assets/textures/title.png");
 
     float timer = 1;
@@ -41,6 +50,9 @@ int main(void)
 
     while (!WindowShouldClose())
     {
+        if (status.state == GAME_CLOSE)
+            break;
+
         if (check_gameover(player, &status) && check_highscore(status))
             status.state = GAME_NEW_HIGHSCORE;
 
@@ -93,9 +105,9 @@ int main(void)
             timer += GetFrameTime();
 
             if (IsKeyPressed(KEY_DOWN))
-                index_menu = (index_menu + 1) % 3;
+                index_menu = (index_menu + 1) % 4;
             if (IsKeyPressed(KEY_UP))
-                index_menu = index_menu <= 0 ? 2 : index_menu - 1;
+                index_menu = index_menu <= 0 ? 3 : index_menu - 1;
 
             BeginDrawing();
             ClearBackground(BLACK);
@@ -116,7 +128,8 @@ int main(void)
                 case 2:
                     status.state = GAME_SETTINGS;
                     break;
-
+                case 3:
+                    status.state = GAME_CLOSE;
                 default:
                     break;
                 }
@@ -183,7 +196,7 @@ int main(void)
         DrawText(TextFormat("Score: %d", status.score), 10, 10, 20, RAYWHITE);
         EndDrawing();
     }
-    
+
     save_highscore(status.high_score);
     UnloadTexture(menu_logo);
     CloseWindow();

@@ -1,34 +1,38 @@
 #include "../includes/input.h"
-
+#include <raymath.h>
 
 void read_movement_player(Player *player)
 {
-    if (IsKeyPressed(KEY_S) && player->head->direction.y != 1 && player->head->direction.y != -1)
+    Vector2 pos_head = (Vector2){player->head->rect.x, player->head->rect.y};
+    Vector2 pos_node2 = (Vector2){player->head->prox->rect.x, player->head->prox->rect.y};
+    float dis = Vector2Distance(pos_head, pos_node2);
+
+    if (IsKeyPressed(KEY_S) && player->head->direction.y == 0 && dis >= player->head->rect.width)
     {
         player->head->direction = (Vector2){0, -1};
         register_curve(player);
     }
-    if (IsKeyPressed(KEY_W) && player->head->direction.y != -1 && player->head->direction.y != 1)
+    if (IsKeyPressed(KEY_W) && player->head->direction.y == 0 && dis >= player->head->rect.width)
     {
         player->head->direction = (Vector2){0, 1};
         register_curve(player);
     }
-    if (IsKeyPressed(KEY_D) && player->head->direction.x != 1 && player->head->direction.x != -1)
+    if (IsKeyPressed(KEY_D) && player->head->direction.x == 0 && dis >= player->head->rect.width)
     {
         player->head->direction = (Vector2){-1, 0};
         register_curve(player);
     }
-    if (IsKeyPressed(KEY_A) && player->head->direction.x != -1 && player->head->direction.x != 1)
+    if (IsKeyPressed(KEY_A) && player->head->direction.x == 0 && dis >= player->head->rect.width)
     {
         player->head->direction = (Vector2){1, 0};
         register_curve(player);
     }
 }
 
-
 void read_keyboard(Text *text)
 {
     int key = GetKeyPressed();
+    bool upercase = (IsKeyDown(KEY_LEFT_SHIFT) || IsKeyDown(KEY_RIGHT_SHIFT)) ? true : false;
 
     if (key > 0)
     {
@@ -36,6 +40,8 @@ void read_keyboard(Text *text)
         {
             if ((key >= 32 && key <= 93))
             {
+                if (!upercase && key >= 65 && key <= 90)
+                    key += 32;
                 text->text[text->character_inserted] = key;
                 text->character_inserted++;
             }
