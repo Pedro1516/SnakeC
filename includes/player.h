@@ -21,6 +21,8 @@ typedef struct Player
     Node *tail;
     Color color;
     float speed;
+    float health;
+    float damage;
 } Player;
 
 void draw_player(Player *player);

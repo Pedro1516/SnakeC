@@ -5,6 +5,7 @@
 #include "../includes/apple.h"
 #include "../includes/game_state.h"
 #include "../includes/queue.h"
+#include "../includes/grass.h"
 
 int main(void)
 {
@@ -24,6 +25,7 @@ int main(void)
     free(highscore);
 
     Player *player = create_player(WHITE, (Rectangle){status.screenWidth / 2 - 15, status.screenWidth / 2 - 15, 30, 30});
+    Grass *grass = init_grass(WIND_RIGHT);
     Apple *apple = malloc(sizeof(Apple) * 5);
     apple[0] = create_apple((Rectangle){status.screenWidth / 4, status.screenWidth / 4, 30, 30}, RED);
 
@@ -38,7 +40,12 @@ int main(void)
         0);
     SetTextureFilter(status.font.texture, TEXTURE_FILTER_BILINEAR);
 
-    Texture menu_logo = LoadTexture("assets/textures/title.png");
+    Texture menu_logo = LoadTexture("assets/textures/title/title.png");
+    Texture menu_background = LoadTexture("assets/textures/title/title_background.png");
+
+    load_texture_grass(grass, "assets/textures/grass/Grass_Right1.png");
+    load_texture_grass(grass, "assets/textures/grass/Grass_Right2.png");
+    load_texture_grass(grass, "assets/textures/grass/Grass_Right3.png");
 
     float timer = 1;
     int index_menu = 0;
@@ -111,6 +118,7 @@ int main(void)
 
             BeginDrawing();
             ClearBackground(BLACK);
+            DrawTextureEx(menu_background, (Vector2){0, 0}, 0, 1.5, (Color){255, 255, 255, 50});
             DrawTexture(menu_logo, status.screenWidth / 2 - menu_logo.width / 2, 50, WHITE);
             draw_menu(status, index_menu);
             EndDrawing();
@@ -188,9 +196,12 @@ int main(void)
             continue;
         }
 
+        update_grass(grass);
+
         BeginDrawing();
 
-        ClearBackground(BLACK);
+        ClearBackground((Color){34, 177, 76, 255});
+        draw_grass(grass);
         draw_player(player);
         draw_apple(apple, 1);
         DrawText(TextFormat("Score: %d", status.score), 10, 10, 20, RAYWHITE);
@@ -199,6 +210,7 @@ int main(void)
 
     save_highscore(status.high_score);
     UnloadTexture(menu_logo);
+    UnloadTexture(menu_background);
     CloseWindow();
 
     return 0;
