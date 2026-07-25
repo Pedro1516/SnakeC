@@ -6,17 +6,32 @@
 #include <math.h>
 #include <raymath.h>
 
-Player *create_player(Color color, Rectangle head)
+Player *create_player(Rectangle head)
 {
     Player *p = malloc(sizeof(Player));
     if (p == NULL)
+    {
+        free(p);
         return NULL;
+    }
 
-    p->color = color;
+    p->texture = malloc(sizeof(Texture) * 3);
+    p->texture[0] = LoadTexture("assets/textures/snake/snake0.png");
+    p->texture[1] = LoadTexture("assets/textures/snake/snake1.png");
+    p->texture[2] = LoadTexture("assets/textures/snake/snake2.png");
+
+    if (p->texture[0].id == 0 || p->texture[1].id == 0 || p->texture[2].id == 0)
+    {
+        free(p->texture);
+        free(p);
+        return NULL;
+    }
+
     p->head = create_head(head);
     if (p->head == NULL)
     {
         free(p);
+        free(p->texture);
         return NULL;
     }
 
@@ -111,9 +126,45 @@ void draw_player(Player *player)
     if (node == NULL)
         return;
 
+    Rectangle source = {
+        0, 0,
+        player->texture[0].width,
+        player->texture[0].height};
+
+    Rectangle dest = {
+        node->rect.x,
+        node->rect.y,
+        player->texture[0].width,
+        player->texture[0].height};
+
+    Vector2 origin = {
+        player->texture[0].width / 2.0f,
+        player->texture[0].height / 2.0f};
+
+    float ang = -round(atan2(node->direction.x, node->direction.y) * (180 / PI));
+    DrawTexturePro(player->texture[0], source, dest, origin, ang, WHITE);
+
+    node = node->prox;
+    if (node == NULL)
+        return;
+
     while (true)
     {
-        DrawRectangleRec(node->rect, player->color);
+        if (node->prox == NULL)
+        {
+            dest.x = node->rect.x;
+            dest.y = node->rect.y;
+            ang = -round(atan2(node->direction.x, node->direction.y) * (180 / PI));
+            DrawTexturePro(player->texture[2], source, dest, origin, ang, WHITE);
+        }
+        else
+        {
+            dest.x = node->rect.x;
+            dest.y = node->rect.y;
+            ang = -round(atan2(node->direction.x, node->direction.y) * (180 / PI));
+            DrawTexturePro(player->texture[1], source, dest, origin, ang, WHITE);
+        }
+
         node = node->prox;
         if (node == NULL)
             break;

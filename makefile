@@ -51,3 +51,7 @@ clean:
 rebuild: clean all
 
 .PHONY: all run clean rebuild
+
+# Executar no GDB
+debug: all
+	gdb ./$(TARGET)

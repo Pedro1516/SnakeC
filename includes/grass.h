@@ -1,6 +1,8 @@
-#include <raylib.h>
 #ifndef GRASS_H
 #define GRASS_H
+
+#include <raylib.h>
+#include "game_state.h"
 
 typedef enum WindDirection
 {
@@ -9,19 +11,11 @@ typedef enum WindDirection
     WIND_NONE
 } WindDirection;
 
-typedef struct GrassAnimation
-{
-    int frame_count;
-    int animation_frame;
-    float frame_duration;
-    float animation_timer;
-} GrassAnimation;
-
 typedef struct Grass
 {
     Texture2D *textures;
     WindDirection wind_direction;
-    GrassAnimation animation;
+    Animation animation;
     int texture_capacity;
 } Grass;
 

@@ -19,14 +19,14 @@ typedef struct Player
 {
     Node *head;
     Node *tail;
-    Color color;
+    Texture *texture;
     float speed;
-    float health;
-    float damage;
+    int health;
+    int damage;
 } Player;
 
 void draw_player(Player *player);
-Player *create_player(Color color, Rectangle head);
+Player *create_player(Rectangle head);
 Node *create_head(Rectangle head);
 Vector2 calc_pos_node(Player *player);
 void add_node(Player *player);
