@@ -137,31 +137,44 @@ void draw_player(Player *player)
         player->texture[0].width,
         player->texture[0].height};
 
+    Rectangle shadow = {
+        node->rect.x + 3,
+        node->rect.y + 3,
+        player->texture[0].width,
+        player->texture[0].height};
+
     Vector2 origin = {
         player->texture[0].width / 2.0f,
         player->texture[0].height / 2.0f};
 
     float ang = -round(atan2(node->direction.x, node->direction.y) * (180 / PI));
+    DrawTexturePro(player->texture[0], source, shadow, origin, ang, (Color){0, 0, 0, 127});
     DrawTexturePro(player->texture[0], source, dest, origin, ang, WHITE);
-
+    
     node = node->prox;
     if (node == NULL)
-        return;
-
+    return;
+    
     while (true)
     {
         if (node->prox == NULL)
         {
             dest.x = node->rect.x;
             dest.y = node->rect.y;
+            shadow.x = dest.x + 3;
+            shadow.y = dest.y + 3;
             ang = -round(atan2(node->direction.x, node->direction.y) * (180 / PI));
+            DrawTexturePro(player->texture[2], source, shadow, origin, ang, (Color){0, 0, 0, 127});
             DrawTexturePro(player->texture[2], source, dest, origin, ang, WHITE);
         }
         else
         {
             dest.x = node->rect.x;
             dest.y = node->rect.y;
+            shadow.x = dest.x + 3;
+            shadow.y = dest.y + 3;
             ang = -round(atan2(node->direction.x, node->direction.y) * (180 / PI));
+            DrawTexturePro(player->texture[1], source, shadow, origin, ang, (Color){0, 0, 0, 127});
             DrawTexturePro(player->texture[1], source, dest, origin, ang, WHITE);
         }
 

@@ -1,11 +1,11 @@
 
 #include "../includes/apple.h"
 
-Apple create_apple(Rectangle rec, Color color)
+Apple create_apple(Rectangle rec)
 {
     Apple a;
     a.rec = rec;
-    a.color = color;
+    a.texture = LoadTexture("assets/textures/apple/apple.png");
 
     return a;
 }
@@ -20,7 +20,8 @@ void draw_apple(Apple *apple, int apple_count)
 {
     for (int i = 0; i < apple_count; i++)
     {
-        DrawRectangleRec(apple->rec, apple->color);
+        DrawTexture(apple[i].texture, apple[i].rec.x + 3, apple[i].rec.y + 5, (Color){0, 0, 0, 127});
+        DrawTexture(apple[i].texture, apple[i].rec.x, apple[i].rec.y, WHITE);
     }
 }
 

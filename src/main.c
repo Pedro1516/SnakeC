@@ -39,7 +39,7 @@ int main(void)
     Player *player = create_player((Rectangle){status.screenWidth / 2 - 15, status.screenWidth / 2 - 15, 30, 30});
     Grass *grass = init_grass(WIND_RIGHT);
     Apple *apple = malloc(sizeof(Apple) * 5);
-    apple[0] = create_apple((Rectangle){status.screenWidth / 4, status.screenWidth / 4, 30, 30}, RED);
+    apple[0] = create_apple((Rectangle){status.screenWidth / 4, status.screenWidth / 4, 30, 30});
 
     status.font = LoadFontEx(
         "assets/fonts/EduVICWANTHand-VariableFont_wght.ttf",
@@ -226,8 +226,8 @@ void update_playing(Grass *grass, Apple *apple, Game *game, Player *player)
 
     ClearBackground((Color){34, 177, 76, 255});
     draw_grass(grass);
-    draw_player(player);
     draw_apple(apple, 1);
+    draw_player(player);
     DrawText(TextFormat("Score: %d", game->score), 10, 10, 20, RAYWHITE);
     EndDrawing();
 }

@@ -27,7 +27,7 @@ void new_highscore(Game *game, const char *name)
 void reset_game(Player **player, Game *game)
 {
     kill_player(*player);
-    *player = create_player(WHITE, (Rectangle){game->screenWidth / 2 - 15, game->screenWidth / 2 - 15, 30, 30});
+    *player = create_player((Rectangle){game->screenWidth / 2 - 15, game->screenWidth / 2 - 15, 30, 30});
     game->score = 0;
 }
 
