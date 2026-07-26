@@ -7,25 +7,41 @@ void read_movement_player(Player *player)
     Vector2 pos_node2 = (Vector2){player->head->prox->rect.x, player->head->prox->rect.y};
     float dis = Vector2Distance(pos_head, pos_node2);
 
-    if (IsKeyPressed(KEY_S) && player->head->direction.y == 0 && dis >= player->head->rect.width)
+    int key = GetKeyPressed();
+    switch (key)
     {
-        player->head->direction = (Vector2){0, -1};
-        register_curve(player);
-    }
-    if (IsKeyPressed(KEY_W) && player->head->direction.y == 0 && dis >= player->head->rect.width)
-    {
-        player->head->direction = (Vector2){0, 1};
-        register_curve(player);
-    }
-    if (IsKeyPressed(KEY_D) && player->head->direction.x == 0 && dis >= player->head->rect.width)
-    {
-        player->head->direction = (Vector2){-1, 0};
-        register_curve(player);
-    }
-    if (IsKeyPressed(KEY_A) && player->head->direction.x == 0 && dis >= player->head->rect.width)
-    {
-        player->head->direction = (Vector2){1, 0};
-        register_curve(player);
+    case KEY_W:
+    case KEY_UP:
+        if (player->head->direction.y == 0 && dis >= player->head->rect.width)
+        {
+            player->head->direction = (Vector2){0, 1};
+            register_curve(player);
+        }
+        break;
+    case KEY_S:
+    case KEY_DOWN:
+        if (player->head->direction.y == 0 && dis >= player->head->rect.width)
+        {
+            player->head->direction = (Vector2){0, -1};
+            register_curve(player);
+        }
+        break;
+    case KEY_A:
+    case KEY_LEFT:
+        if (player->head->direction.x == 0 && dis >= player->head->rect.width)
+        {
+            player->head->direction = (Vector2){1, 0};
+            register_curve(player);
+        }
+        break;
+    case KEY_D:
+    case KEY_RIGHT:
+        if (player->head->direction.x == 0 && dis >= player->head->rect.width)
+        {
+            player->head->direction = (Vector2){-1, 0};
+            register_curve(player);
+        }
+        break;
     }
 }
 

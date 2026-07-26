@@ -1,11 +1,12 @@
+#ifndef APPLE_H
+#define APPLE_H
+
 #include <raylib.h>
 #include "player.h"
 #include "game_state.h"
 
-#ifndef APPLE_H
-#define APPLE_H
-
-typedef struct{
+typedef struct
+{
     Rectangle rec;
     Texture texture;
 } Apple;

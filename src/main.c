@@ -1,4 +1,5 @@
 #include <raylib.h>
+#include <raymath.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
@@ -24,7 +25,7 @@ int main(void)
         .state = GAME_MENU,
 
     };
-
+    printf("%s\n", RAYLIB_VERSION);
     InitWindow(status.screenWidth, status.screenHeight, "Snake C");
     SetTargetFPS(60);
     SetExitKey(KEY_NULL);
@@ -41,11 +42,7 @@ int main(void)
     Apple *apple = malloc(sizeof(Apple) * 5);
     apple[0] = create_apple((Rectangle){status.screenWidth / 4, status.screenWidth / 4, 30, 30});
 
-    status.font = LoadFontEx(
-        "assets/fonts/EduVICWANTHand-VariableFont_wght.ttf",
-        60,
-        NULL,
-        0);
+    status.font = LoadFontEx("assets/fonts/EduVICWANTHand-VariableFont_wght.ttf", 60, NULL, 0);
     SetTextureFilter(status.font.texture, TEXTURE_FILTER_BILINEAR);
 
     Texture menu_logo = LoadTexture("assets/textures/title/title.png");
@@ -55,6 +52,9 @@ int main(void)
     load_texture_grass(grass, "assets/textures/grass/Grass_Right2.png");
     load_texture_grass(grass, "assets/textures/grass/Grass_Right3.png");
 
+    Texture snake_battle = LoadTexture("assets/textures/snake/snake_battle.png");
+    Texture bat_battle = LoadTexture("assets/textures/enemies/bat/bat_battle.png");
+
     float timer = 1;
     int index_menu = 0;
 
@@ -62,6 +62,13 @@ int main(void)
     text_highscore.character_inserted = 0;
     text_highscore.limit = 20;
     text_highscore.text = calloc(text_highscore.limit + 1, sizeof(char));
+
+    Camera3D cam = {
+        .fovy = 45.0f,
+        .projection = CAMERA_PERSPECTIVE,
+        .position = (Vector3){0.0f, 10.0f, 10.0f},
+        .up = (Vector3){0.0f, 1.0f, 0.0f},
+        .target = (Vector3){0.0f, 0.0f, 0.0f}};
 
     while (!WindowShouldClose())
     {
@@ -71,13 +78,18 @@ int main(void)
         if (check_gameover(player, &status) && check_highscore(status))
             status.state = GAME_NEW_HIGHSCORE;
 
-        if (IsKeyPressed(KEY_P) && (status.state == GAME_PLAYING || status.state == GAME_PAUSED))
-            status.state = status.state == GAME_PAUSED ? GAME_PLAYING : GAME_PAUSED;
-
-        if (IsKeyPressed(KEY_ESCAPE))
+        if (IsKeyPressed(KEY_ESCAPE) && !(status.state == GAME_NEW_HIGHSCORE))
         {
-            reset_game(&player, &status);
-            status.state = GAME_MENU;
+            if (status.state == GAME_PLAYING || status.state == GAME_PAUSED)
+            {
+                status.state = status.state == GAME_PAUSED ? GAME_PLAYING : GAME_PAUSED ;
+            }
+            
+            else
+            {
+                reset_game(&player, &status);
+                status.state = GAME_MENU;
+            }
         }
 
         switch (status.state)
@@ -102,6 +114,22 @@ int main(void)
         case GAME_PLAYING:
             update_playing(grass, apple, &status, player);
             break;
+        case GAME_PAUSED:
+            BeginDrawing();
+            ClearBackground(BLACK);
+            EndDrawing();
+            break;
+        case GAME_BATTLE:
+            BeginDrawing();
+            ClearBackground(BLACK);
+
+            BeginMode3D(cam);
+            DrawBillboard(cam, bat_battle, (Vector3){0, 9, 9}, 0.5f, WHITE);
+
+            EndMode3D();
+            DrawTexture(snake_battle, status.screenWidth - snake_battle.width, status.screenHeight - snake_battle.height, WHITE);
+            EndDrawing();
+            break;
         default:
             break;
         }
@@ -115,38 +143,74 @@ int main(void)
     return 0;
 }
 
+#define MENU_ITEMS 4
+
 void update_menu(float *timer, int *index_menu, Texture *menu_background, Texture *menu_logo, Game *game)
 {
-    (*timer) += GetFrameTime();
+    *timer += GetFrameTime();
 
-    if (IsKeyPressed(KEY_DOWN))
-        (*index_menu) = ((*index_menu) + 1) % 4;
-    if (IsKeyPressed(KEY_UP))
-        (*index_menu) = (*index_menu) <= 0 ? 3 : (*index_menu) - 1;
+    if (IsKeyPressed(KEY_DOWN) || IsKeyPressed(KEY_S))
+        *index_menu = (*index_menu + 1) % MENU_ITEMS;
+
+    if (IsKeyPressed(KEY_UP) || IsKeyPressed(KEY_W))
+        *index_menu = (*index_menu == 0) ? MENU_ITEMS - 1 : *index_menu - 1;
+
+    Rectangle menuRect[MENU_ITEMS];
 
     BeginDrawing();
+
     ClearBackground(BLACK);
-    DrawTextureEx((*menu_background), (Vector2){0, 0}, 0, 1.5, (Color){255, 255, 255, 50});
-    DrawTexture((*menu_logo), game->screenWidth / 2 - (*menu_logo).width / 2, 50, WHITE);
-    draw_menu((*game), (*index_menu));
+
+    DrawTextureEx(
+        *menu_background,
+        (Vector2){0, 0},
+        0,
+        1.5f,
+        (Color){255, 255, 255, 50});
+
+    DrawTexture(
+        *menu_logo,
+        game->screenWidth / 2 - menu_logo->width / 2,
+        50,
+        WHITE);
+
+    // Primeiro calcula e desenha o menu
+    draw_menu(*game, menuRect);
+
+    // Depois verifica o mouse
+    bool hover = select_menu(menuRect, index_menu, MENU_ITEMS);
+
+    // Desenha o destaque
+    float alpha = (sinf(*timer * 5.0f) + 1.0f) * 0.5f;
+    Color border = Fade(YELLOW, 0.4f + alpha * 0.6f);
+
+    DrawRectangleRoundedLines(
+        menuRect[*index_menu],
+        0.25f,
+        8,
+        border);
+
     EndDrawing();
 
-    if ((IsKeyPressed(KEY_ENTER)))
+    if (IsKeyPressed(KEY_ENTER) ||
+        (hover && IsMouseButtonReleased(MOUSE_BUTTON_LEFT)))
     {
-        switch ((*index_menu))
+        switch (*index_menu)
         {
         case 0:
-            (*game).state = GAME_PLAYING;
+            game->state = GAME_PLAYING;
             break;
+
         case 1:
-            (*game).state = GAME_HIGHSCORE;
+            game->state = GAME_HIGHSCORE;
             break;
+
         case 2:
-            (*game).state = GAME_SETTINGS;
+            game->state = GAME_SETTINGS;
             break;
+
         case 3:
-            (*game).state = GAME_CLOSE;
-        default:
+            game->state = GAME_CLOSE;
             break;
         }
     }
@@ -157,7 +221,6 @@ void update_highscore(Game game)
     BeginDrawing();
     ClearBackground(BLACK);
     DrawText("HIGHSCORE", game.screenWidth / 2 - MeasureText("HIGHSCORE", 40) / 2, 10, 40, RED);
-    EndDrawing();
 
     for (int i = 0; i < HIGHSCORE_MAX; i++)
     {
@@ -171,6 +234,8 @@ void update_highscore(Game game)
         else
             DrawText(TextFormat("%d.", i), 20, 60 + i * 45, 30, RED);
     }
+
+    EndDrawing();
 }
 
 void update_new_highscore(float *timer, Game *game, Player **player, Text *text_highscore)
@@ -198,13 +263,9 @@ void update_gameover(float *timer, Game *game, Player **player)
     DrawText(TextFormat("Score: %d", game->score), game->screenWidth / 2 - MeasureText(TextFormat("Score: %d", game->score), 20) / 2, game->screenHeight / 2 + 20, 20, RAYWHITE);
     EndDrawing();
 
-    if (*timer >= 1.0f && *timer < 4.0f)
-    {
-        DrawText("Press Any Key to Play Again", game->screenWidth / 2 - MeasureText("Press Any Key to Play Again", 20) / 2, game->screenHeight / 2 - 20 + 100, 20, RED);
-
-        if (*timer >= 2.0f)
-            *timer = 0;
-    }
+    float alpha = (sinf(*timer * 5.0f) + 1.0f) * 0.5f;
+    Color color = Fade(RED, alpha);
+    DrawText("Press Any Key to Play Again", game->screenWidth / 2 - MeasureText("Press Any Key to Play Again", 20) / 2, game->screenHeight / 2 - 20 + 100, 20, color);
 
     if (GetKeyPressed())
     {

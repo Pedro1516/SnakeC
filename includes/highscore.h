@@ -1,9 +1,8 @@
 #ifndef HIGHSCORE_H
 #define HIGHSCORE_H
-
 #define HIGHSCORE_MAX 10
 
-typedef struct Game Game;
+#include "types.h"
 
 typedef struct
 {

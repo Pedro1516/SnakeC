@@ -1,7 +1,7 @@
 #ifndef QUEUE_H
 #define QUEUE_H
 #include <stdbool.h>
-
+#include "types.h"
 
 typedef struct QueueNode
 {
@@ -9,11 +9,11 @@ typedef struct QueueNode
     struct QueueNode *next;
 } QueueNode;
 
-typedef struct Queue
+struct Queue
 {
     QueueNode *head;
     QueueNode *tail;
-} Queue;
+};
 
 Queue *create_queue();
 bool enqueue(Queue *queue, void *data);

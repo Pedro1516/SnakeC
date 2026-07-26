@@ -3,7 +3,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-
 void new_highscore(Game *game, const char *name)
 {
     HighScore new_highsore;
@@ -41,32 +40,35 @@ char *string_duplicate(const char *str)
     return copy;
 }
 
-void draw_menu(Game game, int index_menu)
+void draw_menu(Game game, Rectangle rec[])
 {
+    const char *text[MENU_ITEMS] = {
+        "Play",
+        "Highscore",
+        "Settings",
+        "Quit"};
 
-    const char *text[4];
-    Vector2 measure_text[4];
-    int font_size = 60;
+    const int fontSize = 60;
 
-    text[0] = "Play";
-    measure_text[0] = MeasureTextEx(game.font, text[0], font_size, 0);
-
-    text[1] = "Highscore";
-    measure_text[1] = MeasureTextEx(game.font, text[1], font_size, 0);
-
-    text[2] = "Settings";
-    measure_text[2] = MeasureTextEx(game.font, text[2], font_size, 0);
-
-    text[3] = "Quit";
-    measure_text[3] = MeasureTextEx(game.font, text[3], font_size, 0);
-
-    for (int i = 0; i < 4; i++)
+    for (int i = 0; i < MENU_ITEMS; i++)
     {
-        if (i == index_menu)
-            DrawRectangle(game.screenWidth / 2 - measure_text[i].x / 2 - 5, game.screenHeight / 2 - ( measure_text[i].y + 10) / 2 + 100 + 60 * i,  measure_text[i].x + 10,  measure_text[i].y + 10, (Color){255, 255, 255, 127});
-            // DrawText(text[i], game.screenWidth / 2 - measure_text[i] / 2, game.screenHeight / 2 - (font_size + 10) / 2 + 100 + 60 * i, font_size, RED);
-        Vector2 pos = {game.screenWidth / 2 - measure_text[i].x / 2, game.screenHeight / 2 - ( measure_text[i].y + 10) / 2 + 100 + 60 * i};
-        DrawTextEx(game.font, text[i], pos, font_size, 0, RED);
+        Vector2 size = MeasureTextEx(game.font, text[i], fontSize, 0);
+
+        rec[i] = (Rectangle){
+            game.screenWidth / 4 - size.x / 2 - 10,
+            game.screenHeight / 4 + 100 + i * fontSize - 5,
+            size.x + 20,
+            size.y + 10};
+
+        DrawTextEx(
+            game.font,
+            text[i],
+            (Vector2){
+                game.screenWidth / 4 - size.x / 2,
+                game.screenHeight / 4 + 100 + i * fontSize},
+            fontSize,
+            0,
+            RED);
     }
 }
 
@@ -90,15 +92,15 @@ void draw_new_high_menu(Game *game, float *timer, const char *text)
 {
     BeginDrawing();
     ClearBackground(BLACK);
-    DrawText("WOW! You can a new highscore!", game->screenWidth / 2 - MeasureText("WOW! You can a new highscore!", 40) / 2, game->screenHeight / 2 - 20, 40, RED);
+    DrawText("WOW! You got a new highscore!", game->screenWidth / 2 - MeasureText("WOW! You can a new highscore!", 40) / 2, game->screenHeight / 2 - 20, 40, RED);
     DrawText(TextFormat("SCORE %d", game->score), game->screenWidth / 2 - MeasureText(TextFormat("SCORE %d", game->score), 30) / 2, game->screenHeight / 2 + 25, 30, RED);
-    DrawText("Entry your name: ", game->screenWidth / 2 - 250, game->screenHeight / 2 + 100, 30, RED);
+    DrawText("Enter your name: ", game->screenWidth / 2 - 250, game->screenHeight / 2 + 100, 30, RED);
     if (text == NULL)
-        DrawText("", game->screenWidth / 2 - 245 + MeasureText("Entry your name: ", 30), game->screenHeight / 2 + 105, 20, WHITE);
+        DrawText("", game->screenWidth / 2 - 245 + MeasureText("Enter your name: ", 30), game->screenHeight / 2 + 105, 20, WHITE);
     else
-        DrawText(text, game->screenWidth / 2 - 245 + MeasureText("Entry your name: ", 30), game->screenHeight / 2 + 105, 20, WHITE);
+        DrawText(text, game->screenWidth / 2 - 245 + MeasureText("Enter your name: ", 30), game->screenHeight / 2 + 105, 20, WHITE);
 
-    DrawRectangleLinesEx((Rectangle){game->screenWidth / 2 - 250 + MeasureText("Entry your name: ", 30), game->screenHeight / 2 + 100, 300, 30}, 2, WHITE);
+    DrawRectangleLinesEx((Rectangle){game->screenWidth / 2 - 250 + MeasureText("Enter your name: ", 30), game->screenHeight / 2 + 100, 300, 30}, 2, WHITE);
 
     if ((*timer) >= 1.0f && (*timer) < 4.0f)
     {
@@ -108,8 +110,23 @@ void draw_new_high_menu(Game *game, float *timer, const char *text)
             (*timer) = 0;
     }
     else
-        DrawLineEx((Vector2){game->screenWidth / 2 - 250 + MeasureText("Entry your name: ", 30) + 10 + MeasureText(text, 20), game->screenHeight / 2 + 100 + 5}, (Vector2){game->screenWidth / 2 - 250 + MeasureText(text, 20) + MeasureText("Entry your name: ", 30) + 10, game->screenHeight / 2 + 100 + 25}, 2, WHITE);
+        DrawLineEx((Vector2){game->screenWidth / 2 - 250 + MeasureText("Enter your name: ", 30) + 10 + MeasureText(text, 20), game->screenHeight / 2 + 100 + 5}, (Vector2){game->screenWidth / 2 - 250 + MeasureText(text, 20) + MeasureText("Entry your name: ", 30) + 10, game->screenHeight / 2 + 100 + 25}, 2, WHITE);
 
     EndDrawing();
 }
 
+bool select_menu(Rectangle rec[], int *index, int count)
+{
+    Vector2 mouse = GetMousePosition();
+
+    for (int i = 0; i < count; i++)
+    {
+        if (CheckCollisionPointRec(mouse, rec[i]))
+        {
+            *index = i;
+            return true;
+        }
+    }
+
+    return false;
+}

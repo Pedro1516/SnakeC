@@ -1,9 +1,8 @@
 #ifndef PLAYER_H
 #define PLAYER_H
-#include <raylib.h>
 
-typedef struct Game Game;
-typedef struct Queue Queue;
+#include <raylib.h>
+#include "types.h"
 
 typedef struct node
 {
@@ -14,7 +13,7 @@ typedef struct node
     struct node *prox;
 } Node;
 
-typedef struct Player
+ struct Player
 {
     Node *head;
     Node *tail;
@@ -22,7 +21,7 @@ typedef struct Player
     float speed;
     int health;
     int damage;
-} Player;
+} ;
 
 void draw_player(Player *player);
 Player *create_player(Rectangle head);

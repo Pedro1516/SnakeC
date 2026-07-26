@@ -30,8 +30,8 @@ Player *create_player(Rectangle head)
     p->head = create_head(head);
     if (p->head == NULL)
     {
-        free(p);
         free(p->texture);
+        free(p);
         return NULL;
     }
 
@@ -138,49 +138,40 @@ void draw_player(Player *player)
         player->texture[0].height};
 
     Rectangle shadow = {
-        node->rect.x + 3,
-        node->rect.y + 3,
+        node->rect.x,
+        node->rect.y,
         player->texture[0].width,
         player->texture[0].height};
 
     Vector2 origin = {
-        player->texture[0].width / 2.0f,
-        player->texture[0].height / 2.0f};
+        player->texture[0].width / 2,
+        player->texture[0].height / 2};
 
-    float ang = -round(atan2(node->direction.x, node->direction.y) * (180 / PI));
-    DrawTexturePro(player->texture[0], source, shadow, origin, ang, (Color){0, 0, 0, 127});
-    DrawTexturePro(player->texture[0], source, dest, origin, ang, WHITE);
-    
-    node = node->prox;
-    if (node == NULL)
-    return;
-    
-    while (true)
+    int i = 0;
+    float ang;
+
+    for (int pass = 0; pass < 2; pass++)
     {
-        if (node->prox == NULL)
+        for (Node *node = player->head; node != NULL; node = node->prox)
         {
-            dest.x = node->rect.x;
-            dest.y = node->rect.y;
-            shadow.x = dest.x + 3;
-            shadow.y = dest.y + 3;
-            ang = -round(atan2(node->direction.x, node->direction.y) * (180 / PI));
-            DrawTexturePro(player->texture[2], source, shadow, origin, ang, (Color){0, 0, 0, 127});
-            DrawTexturePro(player->texture[2], source, dest, origin, ang, WHITE);
-        }
-        else
-        {
-            dest.x = node->rect.x;
-            dest.y = node->rect.y;
-            shadow.x = dest.x + 3;
-            shadow.y = dest.y + 3;
-            ang = -round(atan2(node->direction.x, node->direction.y) * (180 / PI));
-            DrawTexturePro(player->texture[1], source, shadow, origin, ang, (Color){0, 0, 0, 127});
-            DrawTexturePro(player->texture[1], source, dest, origin, ang, WHITE);
-        }
+            if (node->prox == NULL)
+                i = 2;
+            else if (node == player->head)
+                i = 0;
+            else
+                i = 1;
 
-        node = node->prox;
-        if (node == NULL)
-            break;
+            dest.x = node->rect.x + player->texture[i].width / 2;
+            dest.y = node->rect.y + player->texture[i].height / 2;
+            shadow.x = dest.x + 3;
+            shadow.y = dest.y + 3;
+            ang = round(atan2f(node->direction.y, node->direction.x) * RAD2DEG - 90);
+
+            if (pass == 0)
+                DrawTexturePro(player->texture[i], source, shadow, origin, ang, (Color){0, 0, 0, 127});
+            else
+                DrawTexturePro(player->texture[i], source, dest, origin, ang, WHITE);
+        }
     }
 }
 

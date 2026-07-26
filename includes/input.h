@@ -1,6 +1,8 @@
-#include "player.h"
 #ifndef INPUT_H
 #define INPUT_H
+
+#include "player.h"
+#include "types.h"
 
 typedef struct Text
 {

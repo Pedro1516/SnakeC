@@ -1,57 +1,93 @@
+# ==========================================================
+# Snake Game - Makefile
+# ==========================================================
+
 # Compilador
-CC = gcc
+CC := gcc
 
-# Nome do executável
-TARGET = bin/snake
+# Executável
+TARGET := bin/snake
 
-# Pastas
-SRC_DIR = src
-INC_DIR = include
-BUILD_DIR = build
+# Diretórios
+SRC_DIR := src
+INC_DIR := include
+BUILD_DIR := build
 
-# Flags de compilação
-CFLAGS = -Wall -Wextra -std=c99 -I$(INC_DIR) -g
+# Ferramenta para localizar bibliotecas
+PKG_CONFIG ?= pkg-config
 
+# ----------------------------------------------------------
+# Configuração de compilação
+# ----------------------------------------------------------
 
-# Bibliotecas da raylib
-LIBS = -lraylib -lGL -lm -lpthread -ldl -lrt -lX11
+# Modo de compilação:
+# make            -> Debug
+# make BUILD=release -> Release
+BUILD ?= debug
 
-# Caso o pkg-config não funcione, substitua a linha acima por:
-# LIBS = -lraylib -lm -lpthread -ldl -lrt -lX11
+# Flags do pré-processador
+CPPFLAGS := -I$(INC_DIR)
+CPPFLAGS += $(shell $(PKG_CONFIG) --cflags raylib)
 
-# Todos os arquivos .c
-SRC = $(wildcard $(SRC_DIR)/*.c)
+# Flags comuns
+CFLAGS := \
+	-Wall \
+	-Wextra \
+	-Wpedantic \
+	-std=c99
 
-# Todos os arquivos .o
-OBJ = $(patsubst $(SRC_DIR)/%.c,$(BUILD_DIR)/%.o,$(SRC))
+# Flags específicas
+ifeq ($(BUILD),release)
+	CFLAGS += -O2
+else
+	CFLAGS += -g
+endif
 
-# -------------------------
+# Bibliotecas
+LDLIBS := $(shell $(PKG_CONFIG) --libs raylib)
+LDLIBS += -lm
+
+# ----------------------------------------------------------
+# Arquivos
+# ----------------------------------------------------------
+
+SRC := $(wildcard $(SRC_DIR)/*.c)
+OBJ := $(patsubst $(SRC_DIR)/%.c,$(BUILD_DIR)/%.o,$(SRC))
+
+# ==========================================================
+# Regras
+# ==========================================================
 
 all: $(TARGET)
 
 # Linkagem
 $(TARGET): $(OBJ)
-	@mkdir -p bin
-	$(CC) $(OBJ) -o $(TARGET) $(LIBS)
+	@mkdir -p $(dir $@)
+	$(CC) $(OBJ) -o $@ $(LDLIBS)
 
 # Compilação
 $(BUILD_DIR)/%.o: $(SRC_DIR)/%.c
 	@mkdir -p $(BUILD_DIR)
-	$(CC) $(CFLAGS) -c $< -o $@
+	$(CC) $(CPPFLAGS) $(CFLAGS) -c $< -o $@
 
-# Executar
+# ==========================================================
+# Utilidades
+# ==========================================================
+
 run: all
 	./$(TARGET)
 
-# Limpar arquivos compilados
-clean:
-	rm -rf $(BUILD_DIR) $(TARGET)
-
-# Recompilar tudo
-rebuild: clean all
-
-.PHONY: all run clean rebuild
-
-# Executar no GDB
 debug: all
 	gdb ./$(TARGET)
+
+clean:
+	rm -rf $(BUILD_DIR) bin
+
+rebuild: clean all
+
+release:
+	$(MAKE) BUILD=release rebuild
+
+# ==========================================================
+
+.PHONY: all run debug clean rebuild release
