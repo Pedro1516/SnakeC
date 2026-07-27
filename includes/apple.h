@@ -13,7 +13,7 @@ typedef struct
 
 Apple create_apple(Rectangle rec);
 void spawn_apple(Apple *apple, Game *game);
-void draw_apple(Apple *apple, int apple_count);
+void draw_apple(Apple *apple, int apple_count, int debbugmode);
 void collect_apple(Player *player, Game *game, Apple *apple, int apple_count);
 
 #endif

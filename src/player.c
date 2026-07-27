@@ -6,6 +6,8 @@
 #include <math.h>
 #include <raymath.h>
 
+#define VISUAL_SMOOTH 0.2f // 0 = nunca alcança (curva infinita), 1 = sem atraso (sem suavização)
+
 Player *create_player(Rectangle head)
 {
     Player *p = malloc(sizeof(Player));
@@ -38,7 +40,6 @@ Player *create_player(Rectangle head)
     p->head->direction = (Vector2){1, 0};
     p->speed = 3;
     p->tail = NULL;
-    add_node(p);
 
     return p;
 }
@@ -61,6 +62,8 @@ Node *create_head(Rectangle head)
 
     h->prox = NULL;
     h->direction = (Vector2){0, 0};
+    h->visual_pos = (Vector2){head.x, head.y};
+    h->prev_visual_pos = h->visual_pos;
     h->direction_curve = create_queue();
     if (h->direction_curve == NULL)
         return NULL;
@@ -93,6 +96,29 @@ Vector2 calc_pos_node(Player *player)
     }
 }
 
+void apply_curve_transition(Node *current)
+{
+    Vector2 target = *(Vector2 *)peek_queue(current->curve);
+    Vector2 to_target = Vector2Subtract(target, (Vector2){current->rect.x, current->rect.y});
+
+    if (Vector2DotProduct(to_target, current->direction) >= 0)
+    {
+        current->direction = *(Vector2 *)peek_queue(current->direction_curve);
+
+        Vector2 *curve = dequeue(current->curve);
+        Vector2 *curve_direction = dequeue(current->direction_curve);
+
+        if (current->prox != NULL)
+        {
+            enqueue(current->prox->curve, create_vector2(curve->x, curve->y));
+            enqueue(current->prox->direction_curve, create_vector2(curve_direction->x, curve_direction->y));
+        }
+
+        free(curve);
+        free(curve_direction);
+    }
+}
+
 void add_node(Player *player)
 {
     if (player == NULL)
@@ -117,7 +143,7 @@ void add_node(Player *player)
     player->tail = player->tail->prox;
 }
 
-void draw_player(Player *player)
+void draw_player(Player *player, int debbugmode)
 {
     if (player == NULL)
         return;
@@ -126,27 +152,8 @@ void draw_player(Player *player)
     if (node == NULL)
         return;
 
-    Rectangle source = {
-        0, 0,
-        player->texture[0].width,
-        player->texture[0].height};
-
-    Rectangle dest = {
-        node->rect.x,
-        node->rect.y,
-        player->texture[0].width,
-        player->texture[0].height};
-
-    Rectangle shadow = {
-        node->rect.x,
-        node->rect.y,
-        player->texture[0].width,
-        player->texture[0].height};
-
-    Vector2 origin = {
-        player->texture[0].width / 2,
-        player->texture[0].height / 2};
-
+    Rectangle source, dest, shadow;
+    Vector2 origin;
     int i = 0;
     float ang;
 
@@ -161,37 +168,33 @@ void draw_player(Player *player)
             else
                 i = 1;
 
-            dest.x = node->rect.x + player->texture[i].width / 2;
-            dest.y = node->rect.y + player->texture[i].height / 2;
-            shadow.x = dest.x + 3;
-            shadow.y = dest.y + 3;
-            ang = round(atan2f(node->direction.y, node->direction.x) * RAD2DEG - 90);
+            source = (Rectangle){0, 0, player->texture[i].width, player->texture[i].height};
+            origin = (Vector2){player->texture[i].width / 2, player->texture[i].height / 2};
+
+            dest.x = node->visual_pos.x + player->texture[i].width / 2;
+            dest.y = node->visual_pos.y + player->texture[i].height / 2;
+            dest.width = player->texture[i].width;
+            dest.height = player->texture[i].height;
+
+            shadow = dest;
+            shadow.x += 3;
+            shadow.y += 3;
+
+            Vector2 delta = Vector2Subtract(node->prev_visual_pos, node->visual_pos); // <- ordem trocada
+            if (Vector2LengthSqr(delta) > 0.0001f)
+                ang = atan2f(delta.y, delta.x) * RAD2DEG - 90;
+            else
+                ang = atan2f(node->direction.y, node->direction.x) * RAD2DEG - 90;
 
             if (pass == 0)
                 DrawTexturePro(player->texture[i], source, shadow, origin, ang, (Color){0, 0, 0, 127});
             else
+            {
                 DrawTexturePro(player->texture[i], source, dest, origin, ang, WHITE);
+                if (debbugmode)
+                    DrawRectangleLines(node->rect.x, node->rect.y, node->rect.width, node->rect.height, MAGENTA);
+            }
         }
-    }
-}
-
-void apply_curve_transition(Node *current)
-{
-    if (Vector2Distance(*(Vector2 *)peek_queue(current->curve), (Vector2){current->rect.x, current->rect.y}) <= 1)
-    {
-        current->direction = *(Vector2 *)peek_queue(current->direction_curve);
-
-        Vector2 *curve = dequeue(current->curve);
-        Vector2 *curve_direction = dequeue(current->direction_curve);
-
-        if (current->prox != NULL)
-        {
-            enqueue(current->prox->curve, create_vector2(curve->x, curve->y));
-            enqueue(current->prox->direction_curve, create_vector2(curve_direction->x, curve_direction->y));
-        }
-
-        free(curve);
-        free(curve_direction);
     }
 }
 
@@ -207,6 +210,7 @@ void move_player(Player *player)
         if (current == NULL)
             return;
 
+        // movimento REAL: sempre exato, sem lerp -> colisão e espaçamento continuam corretos
         current->rect.x -= player->speed * current->direction.x;
         current->rect.y -= player->speed * current->direction.y;
 
@@ -214,6 +218,11 @@ void move_player(Player *player)
         {
             apply_curve_transition(current);
         }
+
+        // posição VISUAL: persegue o rect real com atraso -> curva suave só no desenho
+        current->prev_visual_pos = current->visual_pos;
+        current->visual_pos.x += (current->rect.x - current->visual_pos.x) * VISUAL_SMOOTH;
+        current->visual_pos.y += (current->rect.y - current->visual_pos.y) * VISUAL_SMOOTH;
 
         current = current->prox;
     }

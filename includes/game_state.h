@@ -41,7 +41,8 @@ void reset_game(Player **player, Game *game);
 char *string_duplicate(const char *str);
 void draw_menu(Game game, Rectangle rec[]);
 int check_highscore(Game game);
-void draw_new_high_menu(Game *game, float *timer, const char *text);
+void draw_new_high_menu(Game *game, float timer, const char *text);
 bool select_menu(Rectangle *rec, int *index_menu, int btn_count);
+Color animate_color_sin(float timer, float min_alpha, float animation_speed, Color color);
 
 #endif

@@ -8,6 +8,8 @@ typedef struct node
 {
     Rectangle rect;
     Vector2 direction;
+    Vector2 visual_pos;       // posição usada só pro desenho (suavizada)
+    Vector2 prev_visual_pos;  // pra calcular o ângulo pela tangente do movimento visual
     Queue *curve;
     Queue *direction_curve;
     struct node *prox;
@@ -23,7 +25,7 @@ typedef struct node
     int damage;
 } ;
 
-void draw_player(Player *player);
+void draw_player(Player *player, int debbugmode);
 Player *create_player(Rectangle head);
 Node *create_head(Rectangle head);
 Vector2 calc_pos_node(Player *player);

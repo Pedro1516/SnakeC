@@ -37,7 +37,7 @@ HighScore *read_file()
         return NULL;
     }
 
-    HighScore *highscore = malloc(sizeof(HighScore) * HIGHSCORE_MAX);
+    HighScore *highscore = calloc(HIGHSCORE_MAX, sizeof(HighScore));
 
     char buffer_geral[1000];
     int index_highscore = 0;
@@ -65,8 +65,9 @@ int load_highscore(HighScore *highscore_to_load, HighScore *highscore_game)
     int i = 0;
     for (; i < HIGHSCORE_MAX; i++)
     {
-        if (highscore_to_load[i].name == NULL)
+        if (highscore_to_load[i].name == NULL || highscore_to_load[i].score <= 0)
             break;
+       
         highscore_game[i] = highscore_to_load[i];
     }
 
@@ -90,7 +91,7 @@ int save_highscore(HighScore *highscore)
             fprintf(f, "%s", highscore[i].name);
             fprintf(f, "%c", (char)1);
             fprintf(f, "%d", highscore[i].score);
-             fprintf(f, "\n");
+            fprintf(f, "\n");
         }
     }
 

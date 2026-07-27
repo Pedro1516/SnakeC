@@ -16,12 +16,14 @@ void spawn_apple(Apple *apple, Game *game)
     apple->rec.y = GetRandomValue(0, game->screenHeight - apple->rec.height);
 }
 
-void draw_apple(Apple *apple, int apple_count)
+void draw_apple(Apple *apple, int apple_count, int debbugmode)
 {
     for (int i = 0; i < apple_count; i++)
     {
         DrawTexture(apple[i].texture, apple[i].rec.x + 3, apple[i].rec.y + 5, (Color){0, 0, 0, 127});
         DrawTexture(apple[i].texture, apple[i].rec.x, apple[i].rec.y, WHITE);
+        if (debbugmode)
+            DrawRectangleLines(apple[i].rec.x, apple[i].rec.y, apple[i].rec.width, apple[i].rec.height, MAGENTA);
     }
 }
 
