@@ -154,25 +154,42 @@ Snake-Game/
 
 ## ⚙️ Requisitos
 
-Antes de compilar, tenha instalado:
+Antes de compilar o projeto, tenha instalado:
 
-- GCC
-- Make
-- Raylib
+- GCC 11 ou superior
+- GNU Make 4.3 ou superior
+- Raylib 6.0
+- Git
 
-Exemplo no Linux:
+### Linux (Debian/Ubuntu)
 
 ```bash
-sudo apt install gcc make libraylib-dev
+sudo apt install gcc make git
 ```
 
-Caso esteja utilizando Windows, é necessário possuir um ambiente com GCC configurado, como:
+Em algumas distribuições, a Raylib pode estar disponível diretamente pelo gerenciador de pacotes. Caso contrário, siga as instruções oficiais de instalação no repositório da Raylib:
 
-- MinGW
-- MSYS2
+https://github.com/raysan5/raylib
+
+### Windows
+
+Utilize um ambiente com GCC configurado. As opções recomendadas são:
+
+- MSYS2 (recomendado)
+- MinGW-w64
 - WSL
 
-> **Nota:** o `Makefile` linka a raylib manualmente com `-lraylib -lGL -lm -lpthread -ldl -lrt -lX11`. Se der erro de linkagem no seu sistema, tente instalar via `pkg-config` ou ajustar essas flags conforme a sua distro/ambiente.
+A instalação da Raylib também pode ser feita seguindo as instruções do repositório oficial:
+
+https://github.com/raysan5/raylib
+
+> **Nota:** O `Makefile` realiza a linkagem manual utilizando:
+>
+> ```text
+> -lraylib -lGL -lm -lpthread -ldl -lrt -lX11
+> ```
+>
+> Dependendo da distribuição Linux ou do ambiente utilizado, essas flags podem variar. Caso ocorra algum erro de linkagem, consulte a documentação oficial da Raylib ou adapte as flags conforme o seu sistema.
 
 ---
 
