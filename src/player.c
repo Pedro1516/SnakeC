@@ -17,29 +17,37 @@ Player *create_player(Rectangle head)
         return NULL;
     }
 
-    p->texture = malloc(sizeof(Texture) * 3);
+    int texture_count = 4;
+    bool invalid_texture = false;
+    p->texture = malloc(sizeof(Texture) * texture_count);
     p->texture[0] = LoadTexture("assets/textures/snake/snake0.png");
     p->texture[1] = LoadTexture("assets/textures/snake/snake1.png");
     p->texture[2] = LoadTexture("assets/textures/snake/snake2.png");
+    p->texture[3] = LoadTexture("assets/textures/snake/snake_battle.png");
 
-    if (p->texture[0].id == 0 || p->texture[1].id == 0 || p->texture[2].id == 0)
+    for (int i = 0; i < texture_count; i++)
+        if (p->texture[i].id == 0 )
+            invalid_texture = true;
+
+    if (invalid_texture)
     {
         free(p->texture);
         free(p);
         return NULL;
     }
 
-    p->head = create_head(head);
-    if (p->head == NULL)
+    p->snake.head = create_head(head);
+    if (p->snake.head == NULL)
     {
         free(p->texture);
         free(p);
         return NULL;
     }
 
-    p->head->direction = (Vector2){1, 0};
-    p->speed = 3;
-    p->tail = NULL;
+    p->snake.head->direction = (Vector2){1, 0};
+    p->snake.speed = 3;
+    p->snake.tail = NULL;
+    add_node(&p->snake);
 
     return p;
 }
@@ -75,23 +83,23 @@ Node *create_head(Rectangle head)
     return h;
 }
 
-Vector2 calc_pos_node(Player *player)
+Vector2 calc_pos_node(Snake *snake)
 {
     Vector2 pos;
 
-    if (player == NULL)
+    if (snake == NULL)
         return (Vector2){-1, -1};
 
-    if (player->tail != NULL)
+    if (snake->tail != NULL)
     {
-        pos.x = player->tail->rect.x + player->tail->rect.width * player->tail->direction.x;
-        pos.y = player->tail->rect.y + player->tail->rect.height * player->tail->direction.y;
+        pos.x = snake->tail->rect.x + snake->tail->rect.width * snake->tail->direction.x;
+        pos.y = snake->tail->rect.y + snake->tail->rect.height * snake->tail->direction.y;
         return pos;
     }
     else
     {
-        pos.x = player->head->rect.x + player->head->rect.width * player->head->direction.x;
-        pos.y = player->head->rect.y + player->head->rect.height * player->head->direction.y;
+        pos.x = snake->head->rect.x + snake->head->rect.width * snake->head->direction.x;
+        pos.y = snake->head->rect.y + snake->head->rect.height * snake->head->direction.y;
         return pos;
     }
 }
@@ -119,28 +127,28 @@ void apply_curve_transition(Node *current)
     }
 }
 
-void add_node(Player *player)
+void add_node(Snake *snake)
 {
-    if (player == NULL)
+    if (snake == NULL)
         return;
 
-    Vector2 pos = calc_pos_node(player);
+    Vector2 pos = calc_pos_node(snake);
     Node *node = create_head((Rectangle){pos.x, pos.y, 30, 30});
     if (node == NULL)
         return;
 
-    if (player->tail == NULL)
+    if (snake->tail == NULL)
     {
-        player->head->prox = node;
-        node->direction = player->head->direction;
-        player->tail = node;
+        snake->head->prox = node;
+        node->direction = snake->head->direction;
+        snake->tail = node;
 
         return;
     }
 
-    player->tail->prox = node;
-    player->tail->prox->direction = player->tail->direction;
-    player->tail = player->tail->prox;
+    snake->tail->prox = node;
+    snake->tail->prox->direction = snake->tail->direction;
+    snake->tail = snake->tail->prox;
 }
 
 void draw_player(Player *player, int debbugmode)
@@ -148,7 +156,7 @@ void draw_player(Player *player, int debbugmode)
     if (player == NULL)
         return;
 
-    Node *node = player->head;
+    Node *node = player->snake.head;
     if (node == NULL)
         return;
 
@@ -159,11 +167,11 @@ void draw_player(Player *player, int debbugmode)
 
     for (int pass = 0; pass < 2; pass++)
     {
-        for (Node *node = player->head; node != NULL; node = node->prox)
+        for (Node *node = player->snake.head; node != NULL; node = node->prox)
         {
             if (node->prox == NULL)
                 i = 2;
-            else if (node == player->head)
+            else if (node == player->snake.head)
                 i = 0;
             else
                 i = 1;
@@ -198,12 +206,12 @@ void draw_player(Player *player, int debbugmode)
     }
 }
 
-void move_player(Player *player)
+void move_player(Snake *snake)
 {
-    if (player == NULL)
+    if (snake == NULL)
         return;
 
-    Node *current = player->head;
+    Node *current = snake->head;
 
     while (true)
     {
@@ -211,8 +219,8 @@ void move_player(Player *player)
             return;
 
         // movimento REAL: sempre exato, sem lerp -> colisão e espaçamento continuam corretos
-        current->rect.x -= player->speed * current->direction.x;
-        current->rect.y -= player->speed * current->direction.y;
+        current->rect.x -= snake->speed * current->direction.x;
+        current->rect.y -= snake->speed * current->direction.y;
 
         if (current->curve->head != NULL && current->direction_curve->head != NULL)
         {
@@ -228,28 +236,28 @@ void move_player(Player *player)
     }
 }
 
-void register_curve(Player *player)
+void register_curve(Snake *snake)
 {
-    if (!enqueue(player->head->prox->curve, create_vector2(player->head->rect.x, player->head->rect.y)))
+    if (!enqueue(snake->head->prox->curve, create_vector2(snake->head->rect.x, snake->head->rect.y)))
         printf("Problema ao enfileirar curva\n");
 
-    if (!enqueue(player->head->prox->direction_curve, create_vector2(player->head->direction.x, player->head->direction.y)))
+    if (!enqueue(snake->head->prox->direction_curve, create_vector2(snake->head->direction.x, snake->head->direction.y)))
         printf("Problema ao enfileirar direção da curva\n");
 }
 
-int check_gameover(Player *player, Game *game)
+int check_gameover(Snake *snake, Game *game)
 {
-    if (player->head->rect.x + player->head->rect.width > game->screenWidth || player->head->rect.x < 0 || player->head->rect.y + player->head->rect.height > game->screenHeight || player->head->rect.y < 0)
+    if (snake->head->rect.x + snake->head->rect.width > game->screenWidth || snake->head->rect.x < 0 || snake->head->rect.y + snake->head->rect.height > game->screenHeight || snake->head->rect.y < 0)
     {
         game->state = GAME_GAMEOVER;
         return 1;
     }
-    if (player->head->prox != NULL)
+    if (snake->head->prox != NULL)
     {
-        Node *aux = player->head->prox;
+        Node *aux = snake->head->prox;
         while (true)
         {
-            if (CheckCollisionRecs(player->head->rect, aux->rect) && player->head->prox != aux)
+            if (CheckCollisionRecs(snake->head->rect, aux->rect) && snake->head->prox != aux)
             {
                 game->state = GAME_GAMEOVER;
                 return 1;
@@ -263,9 +271,9 @@ int check_gameover(Player *player, Game *game)
     return 0;
 }
 
-void scoreup(Player *player, Game *game)
+void scoreup(Snake *snake, Game *game)
 {
-    add_node(player);
+    add_node(snake);
     game->score++;
 }
 
@@ -274,7 +282,7 @@ void kill_player(Player *player)
     if (player == NULL)
         return;
 
-    Node *current = player->head;
+    Node *current = player->snake.head;
 
     while (current != NULL)
     {

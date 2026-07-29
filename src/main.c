@@ -9,6 +9,9 @@
 #include "../includes/game_state.h"
 #include "../includes/queue.h"
 #include "../includes/grass.h"
+#include "../includes/battle.h"
+#include "../includes/enemy.h"
+#include "../includes/combat_stats.h"
 
 void update_menu(float timer, int *index_menu, Texture *menu_background, Texture *menu_logo, Game *game, Player **player);
 void update_highscore(Game game);
@@ -30,7 +33,8 @@ int main(void)
     SetTargetFPS(60);
     SetExitKey(KEY_NULL);
 
-    for (int i = 0; i < HIGHSCORE_MAX; i++){
+    for (int i = 0; i < HIGHSCORE_MAX; i++)
+    {
         status.high_score[i].score = -1;
         status.high_score[i].name = NULL;
     }
@@ -54,9 +58,6 @@ int main(void)
     load_texture_grass(grass, "assets/textures/grass/Grass_Right2.png");
     load_texture_grass(grass, "assets/textures/grass/Grass_Right3.png");
 
-    Texture snake_battle = LoadTexture("assets/textures/snake/snake_battle.png");
-    Texture bat_battle = LoadTexture("assets/textures/enemies/bat/bat_battle.png");
-
     float timer = 0;
     int index_menu = 0;
 
@@ -65,20 +66,19 @@ int main(void)
     text_highscore.limit = 20;
     text_highscore.text = calloc(text_highscore.limit + 1, sizeof(char));
 
-    Camera3D cam = {
-        .fovy = 45.0f,
-        .projection = CAMERA_PERSPECTIVE,
-        .position = (Vector3){0.0f, 10.0f, 10.0f},
-        .up = (Vector3){0.0f, 1.0f, 0.0f},
-        .target = (Vector3){0.0f, 0.0f, 0.0f}};
+    Enemy enemy = {(CombatStats){100, 100, 10, 15, 50, 2}, "Bat", 15};
+    Battle *battle = init_battle(&(player->status), &(enemy.status));
+
+    float frame_target = 0;
 
     while (!WindowShouldClose())
     {
-        timer += GetFrameTime();
+        float dt = GetFrameTime();
+        timer += dt;
         if (status.state == GAME_CLOSE)
             break;
 
-        if (check_gameover(player, &status) && check_highscore(status))
+        if (check_gameover(&player->snake, &status) && check_highscore(status))
             status.state = GAME_NEW_HIGHSCORE;
 
         if (IsKeyPressed(KEY_ESCAPE) && !(status.state == GAME_NEW_HIGHSCORE))
@@ -116,14 +116,37 @@ int main(void)
             update_playing(grass, apple, &status, player, &debbugmode, timer);
             break;
         case GAME_BATTLE:
-            BeginDrawing();
-            ClearBackground(BLACK);
+            // frame_target += dt;
 
-            BeginMode3D(cam);
-            DrawBillboard(cam, bat_battle, (Vector3){0, 9, 9}, 0.5f, WHITE);
+            // if (frame_target >= 1.5)
+            // {
+            //     frame_target -= 1.5;
+
+            //     combat_take_damage(&(enemy.status), 25);
+            // }
+
+            BeginDrawing();
+            ClearBackground(BLUE);
+
+            BeginMode3D(battle->camera_battle.cam);
+
+            DrawPlane((Vector3){0, 0, 0},
+                      (Vector2){20, 20},
+                      DARKGREEN);
+
+            DrawBillboard(
+                battle->camera_battle.cam,
+                battle->enemy.texture,
+                battle->enemy.position,
+                1.5f,
+                WHITE);
+
+            draw_entidy(battle);
 
             EndMode3D();
-            DrawTexture(snake_battle, status.screenWidth - snake_battle.width, status.screenHeight - snake_battle.height, WHITE);
+            draw_info_enemy(&status, &enemy);
+            DrawText(TextFormat("timer: %.2f", timer), status.screenWidth - MeasureText(TextFormat("timer: %.2f", timer), 30), 10, 30, RED);
+
             EndDrawing();
             break;
         default:
@@ -346,9 +369,9 @@ void update_playing(Grass *grass, Apple *apple, Game *game, Player *player, int 
 
     if (game->state != GAME_PAUSED)
     {
-        move_player(player);
-        read_movement_player(player);
-        collect_apple(player, game, apple, 1);
+        move_player(&player->snake);
+        read_movement_player(&player->snake);
+        collect_apple(&player->snake, game, apple, 1);
         update_grass(grass);
     }
 

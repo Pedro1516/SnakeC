@@ -1,6 +1,7 @@
 #ifndef GAME_STATE_H
 #define GAME_STATE_H
 
+#include <stdbool.h>
 #include <raylib.h>
 #include "highscore.h"
 #include "types.h"
@@ -35,6 +36,7 @@ typedef struct Animation
     int animation_frame;
     float frame_duration;
     float animation_timer;
+    bool reverse;
 } Animation;
 
 void reset_game(Player **player, Game *game);

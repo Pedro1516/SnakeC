@@ -11,7 +11,7 @@ typedef struct Text
     int character_inserted;
 } Text;
 
-void read_movement_player(Player *player);
+void read_movement_player(Snake *snake);
 void read_keyboard(Text *text);
 void reset_text(Text *text);
 

@@ -27,13 +27,13 @@ void draw_apple(Apple *apple, int apple_count, int debbugmode)
     }
 }
 
-void collect_apple(Player *player, Game *game, Apple *apple, int apple_count)
+void collect_apple(Snake *snake, Game *game, Apple *apple, int apple_count)
 {
     for (int i = 0; i < apple_count; i++)
     {
-        if (CheckCollisionRecs(player->head->rect, apple[i].rec))
+        if (CheckCollisionRecs(snake->head->rect, apple[i].rec))
         {
-            scoreup(player, game);
+            scoreup(snake, game);
             spawn_apple(&apple[i], game);
         }
     }

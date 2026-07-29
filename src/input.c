@@ -1,10 +1,14 @@
 #include "../includes/input.h"
 #include <raymath.h>
+#include <stdlib.h>
 
-void read_movement_player(Player *player)
+void read_movement_player(Snake *snake)
 {
-    Vector2 pos_head = (Vector2){player->head->rect.x, player->head->rect.y};
-    Vector2 pos_node2 = (Vector2){player->head->prox->rect.x, player->head->prox->rect.y};
+    if (snake == NULL || snake->head == NULL || snake->head->prox == NULL)
+        return;
+
+    Vector2 pos_head = (Vector2){snake->head->rect.x, snake->head->rect.y};
+    Vector2 pos_node2 = (Vector2){snake->head->prox->rect.x, snake->head->prox->rect.y};
     float dis = Vector2Distance(pos_head, pos_node2);
 
     int key = GetKeyPressed();
@@ -12,34 +16,34 @@ void read_movement_player(Player *player)
     {
     case KEY_W:
     case KEY_UP:
-        if (player->head->direction.y == 0 && dis >= player->head->rect.width)
+        if (snake->head->direction.y == 0 && dis >= snake->head->rect.width)
         {
-            player->head->direction = (Vector2){0, 1};
-            register_curve(player);
+            snake->head->direction = (Vector2){0, 1};
+            register_curve(snake);
         }
         break;
     case KEY_S:
     case KEY_DOWN:
-        if (player->head->direction.y == 0 && dis >= player->head->rect.width)
+        if (snake->head->direction.y == 0 && dis >= snake->head->rect.width)
         {
-            player->head->direction = (Vector2){0, -1};
-            register_curve(player);
+            snake->head->direction = (Vector2){0, -1};
+            register_curve(snake);
         }
         break;
     case KEY_A:
     case KEY_LEFT:
-        if (player->head->direction.x == 0 && dis >= player->head->rect.width)
+        if (snake->head->direction.x == 0 && dis >= snake->head->rect.width)
         {
-            player->head->direction = (Vector2){1, 0};
-            register_curve(player);
+            snake->head->direction = (Vector2){1, 0};
+            register_curve(snake);
         }
         break;
     case KEY_D:
     case KEY_RIGHT:
-        if (player->head->direction.x == 0 && dis >= player->head->rect.width)
+        if (snake->head->direction.x == 0 && dis >= snake->head->rect.width)
         {
-            player->head->direction = (Vector2){-1, 0};
-            register_curve(player);
+            snake->head->direction = (Vector2){-1, 0};
+            register_curve(snake);
         }
         break;
     }
