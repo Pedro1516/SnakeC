@@ -13,6 +13,9 @@
 #include "../includes/enemy.h"
 #include "../includes/combat_stats.h"
 
+#define MENU_ITEMS 4
+#define MENU_BATTLE_ITEMS 5
+
 void update_menu(float timer, int *index_menu, Texture *menu_background, Texture *menu_logo, Game *game, Player **player);
 void update_highscore(Game game);
 void update_new_highscore(float timer, Game *game, Player **player, Text *text_highscore);
@@ -66,11 +69,11 @@ int main(void)
     text_highscore.limit = 20;
     text_highscore.text = calloc(text_highscore.limit + 1, sizeof(char));
 
-    Enemy enemy = {(CombatStats){100, 100, 10, 15, 50, 2}, "Bat", 15};
-    Battle *battle = init_battle(&(player->status), &(enemy.status));
+    Enemy enemy = {(CombatStats){10, 10, 10, 15, 50, 2}, "Bat", 15};
+    Battle *battle = init_battle(&(player->status), &(enemy.status), "./assets/textures/snake/snake_battle.png", "./assets/textures/enemies/bat/bat_battle.png");
+    Texture hp_texture_bar = LoadTexture("./assets/textures/GUI/health_bar.png");
 
-    float frame_target = 0;
-
+    int index = 0;
     while (!WindowShouldClose())
     {
         float dt = GetFrameTime();
@@ -116,15 +119,9 @@ int main(void)
             update_playing(grass, apple, &status, player, &debbugmode, timer);
             break;
         case GAME_BATTLE:
-            // frame_target += dt;
-
-            // if (frame_target >= 1.5)
-            // {
-            //     frame_target -= 1.5;
-
-            //     combat_take_damage(&(enemy.status), 25);
-            // }
-
+        {
+            int option_count = 5;
+            Rectangle rect_options[option_count];
             BeginDrawing();
             ClearBackground(BLUE);
 
@@ -134,27 +131,45 @@ int main(void)
                       (Vector2){20, 20},
                       DARKGREEN);
 
-            DrawBillboard(
-                battle->camera_battle.cam,
-                battle->enemy.texture,
-                battle->enemy.position,
-                1.5f,
-                WHITE);
-
             draw_entidy(battle);
 
             EndMode3D();
-            draw_info_enemy(&status, &enemy);
+            draw_info_enemy(&status, &enemy, &hp_texture_bar);
             DrawText(TextFormat("timer: %.2f", timer), status.screenWidth - MeasureText(TextFormat("timer: %.2f", timer), 30), 10, 30, RED);
 
+            draw_menu_player(&(player->status), &status, timer, &index, rect_options);
+
+            bool hover = select_menu(rect_options, &index_menu, option_count);
+
+            // Desenha o destaque
+            Color border = animate_color_sin(timer, 0.3f, 10.0f, RED);
+
+            if (hover)
+            {
+                DrawRectangleRoundedLines(rect_options[index_menu], 0.25f, 8, border);
+                if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
+                    switch (index_menu)
+                    {
+                    case 0:
+                    {
+                        int damage = combat_calculate_damage(&(player->status), &(enemy.status));
+                        combat_take_damage(&(enemy.status), damage);
+                        break;
+                    }
+                    default:
+                        break;
+                    }
+            }
+
             EndDrawing();
-            break;
+        }
+        break;
         default:
             break;
         }
 
         if (timer >= 60)
-            timer = 0;
+            timer -= 60;
     }
 
     save_highscore(status.high_score);
@@ -164,8 +179,6 @@ int main(void)
 
     return 0;
 }
-
-#define MENU_ITEMS 4
 
 void update_menu(float timer, int *index_menu, Texture *menu_background, Texture *menu_logo, Game *game, Player **player)
 {
@@ -282,7 +295,7 @@ void update_gameover(float *timer, Game *game, Player **player)
     DrawText(TextFormat("Score: %d", game->score), game->screenWidth / 2 - MeasureText(TextFormat("Score: %d", game->score), 20) / 2, game->screenHeight / 2 + 20, 20, RAYWHITE);
     EndDrawing();
 
-    float alpha = (sinf(*timer * 5.0f) + 1.0f) * 0.5f;
+    float alpha = (sinf(*timer) + 1.0f) * 0.5f;
     Color color = Fade(RED, alpha);
     DrawText("Press Any Key to Play Again", game->screenWidth / 2 - MeasureText("Press Any Key to Play Again", 20) / 2, game->screenHeight / 2 - 20 + 100, 20, color);
 

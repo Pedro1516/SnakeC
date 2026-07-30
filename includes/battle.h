@@ -32,8 +32,8 @@ typedef struct
     CombatStats *enemy_data;
 } Battle;
 
-void draw_info_enemy(const Game *game, const Enemy *enemy);
-Battle *init_battle(CombatStats *player, CombatStats *enemy);
+void draw_info_enemy(const Game *game, const Enemy *enemy, Texture *texture_bar);
+Battle *init_battle(CombatStats *player, CombatStats *enemy, const char *texture_player_path, const char *texture_enemy_path);
 void draw_entidy(Battle *battleInfo);
-
+void draw_menu_player(const CombatStats *player, const Game *game, float timer, int *index_menu, Rectangle *rect_options);
 #endif

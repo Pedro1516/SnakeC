@@ -28,7 +28,6 @@ struct Player
 {
     Snake snake;
     CombatStats status;
-
     Texture *texture;
 };
 
@@ -37,7 +36,7 @@ struct Item
     const char *name;
     int amount;
     int type;
-    Texture texture;
+    Texture *texture;
 };
 
 void draw_player(Player *player, int debbugmode);

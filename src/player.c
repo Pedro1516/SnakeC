@@ -8,12 +8,39 @@
 
 #define VISUAL_SMOOTH 0.2f // 0 = nunca alcança (curva infinita), 1 = sem atraso (sem suavização)
 
+Snake create_snake(Rectangle head)
+{
+    Snake snake = {0};
+    snake.head = create_head(head);
+    if (snake.head == NULL)
+        return (Snake){0};
+
+    snake.head->direction = (Vector2){1, 0};
+    snake.speed = 3;
+    snake.tail = NULL;
+    add_node(&snake);
+
+    return snake;
+}
+
+CombatStats create_stats()
+{
+    CombatStats stats = {0};
+    stats.acuracy = 90;
+    stats.attack = 1;
+    stats.defense = 1;
+    stats.health = 10;
+    stats.max_health = 10;
+    stats.lucky = 1;
+
+    return stats;
+}
+
 Player *create_player(Rectangle head)
 {
-    Player *p = malloc(sizeof(Player));
+    Player *p = calloc(1, sizeof(Player));
     if (p == NULL)
     {
-        free(p);
         return NULL;
     }
 
@@ -26,28 +53,24 @@ Player *create_player(Rectangle head)
     p->texture[3] = LoadTexture("assets/textures/snake/snake_battle.png");
 
     for (int i = 0; i < texture_count; i++)
-        if (p->texture[i].id == 0 )
+        if (p->texture[i].id == 0)
             invalid_texture = true;
 
-    if (invalid_texture)
+    p->snake = create_snake(head);
+    p->status = create_stats();
+
+    if (p->snake.head == NULL || invalid_texture)
     {
+        for (int i = 0; i < texture_count; i++)
+        {
+            if (p->texture[i].id != 0)
+                UnloadTexture(p->texture[i]);
+        }
+
         free(p->texture);
         free(p);
         return NULL;
     }
-
-    p->snake.head = create_head(head);
-    if (p->snake.head == NULL)
-    {
-        free(p->texture);
-        free(p);
-        return NULL;
-    }
-
-    p->snake.head->direction = (Vector2){1, 0};
-    p->snake.speed = 3;
-    p->snake.tail = NULL;
-    add_node(&p->snake);
 
     return p;
 }
